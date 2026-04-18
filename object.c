@@ -211,6 +211,22 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
         free(buffer);
         return -1;
     }
+    if (strncmp(buffer, "blob", 4) == 0) *type_out = OBJ_BLOB;
+    else if (strncmp(buffer, "tree", 4) == 0) *type_out = OBJ_TREE;
+    else *type_out = OBJ_COMMIT;
+
+    size_t data_len = size - (nul - buffer) - 1;
+    void *data_copy = malloc(data_len);
+    if (!data_copy) {
+        free(buffer);
+        return -1;
+    }
+
+    memcpy(data_copy, nul + 1, data_len);
+
+    *data_out = data_copy;
+    *len_out = data_len;
+
     free(buffer);
     return 0;
 }
