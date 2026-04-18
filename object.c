@@ -96,27 +96,39 @@ int object_exists(const ObjectID *id) {
 int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out) {
     // TODO: Implement
     const char *type_str;
-if (type == OBJ_BLOB) type_str = "blob";
-else if (type == OBJ_TREE) type_str = "tree";
-else type_str = "commit";
+	if (type == OBJ_BLOB) type_str = "blob";
+	else if (type == OBJ_TREE) type_str = "tree";
+	else type_str = "commit";
 
-char header[64];
-int header_len = snprintf(header, sizeof(header), "%s %zu", type_str, len) + 1;
+	char header[64];
+	int header_len = snprintf(header, sizeof(header), "%s %zu", type_str, len) + 1;
 
-size_t total_len = header_len + len;
-char *full = malloc(total_len);
-if (!full) return -1;
+	size_t total_len = header_len + len;
+	char *full = malloc(total_len);
+	if (!full) return -1;
 
-memcpy(full, header, header_len);
-memcpy(full + header_len, data, len);
+	memcpy(full, header, header_len);
+	memcpy(full + header_len, data, len);
 
-ObjectID id;
-compute_hash(full, total_len, &id);
+	ObjectID id;
+	compute_hash(full, total_len, &id);
 
-*id_out = id;
+	*id_out = id;
+	if (object_exists(&id)) {
+        free(full);
+        return 0;
+        }
+	char path[512];
+	object_path(&id, path, sizeof(path));
 
-free(full);
-return 0;
+	char dir[512];
+	snprintf(dir, sizeof(dir), "%s", path);
+	dir[strlen(dir) - (HASH_HEX_SIZE - 2)] = '\0';
+
+	mkdir(dir, 0755); 
+
+	free(full);
+	return 0;
 }
 
 // Read an object from the store.
