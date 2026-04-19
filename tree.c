@@ -151,7 +151,16 @@ static int build(Index *idx, const char *prefix, ObjectID *out) {
 
         if (strncmp(path, prefix, prefix_len) != 0)
             continue;
-    }
+        const char *rest = path + prefix_len;
+        char *slash = strchr(rest, '/');
 
+        if (!slash) {
+            TreeEntry *e = &tree.entries[tree.count++];
+            e->mode = idx->entries[i].mode;
+            e->hash = idx->entries[i].hash;
+            strcpy(e->name, rest);
+        }
+    }
+    (void)out;
     return -1;
 }
