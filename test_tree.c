@@ -101,7 +101,22 @@ int main(void) {
     int rc __attribute__((unused));
     rc = system("rm -rf .pes");
     rc = system("mkdir -p .pes/objects .pes/refs/heads");
+Tree t;
+t.count = 1;
 
+t.entries[0].mode = 0100644;
+memset(t.entries[0].hash.hash, 0xAA, HASH_SIZE);
+strcpy(t.entries[0].name, "file.txt");
+
+void *data;
+size_t len;
+
+tree_serialize(&t, &data, &len);
+
+ObjectID id;
+object_write(OBJ_TREE, data, len, &id);
+
+free(data);
     test_tree_roundtrip();
     test_tree_determinism();
 
