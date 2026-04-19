@@ -193,6 +193,15 @@ static int build(Index *idx, const char *prefix, ObjectID *out) {
             strcpy(e->name, dir);
         }
     }
-    (void)out;
-    return -1;
+
+    void *data;
+    size_t len;
+
+    if (tree_serialize(&tree, &data, &len) < 0)
+        return -1;
+
+    int rc = object_write(OBJ_TREE, data, len, out);
+    free(data);
+
+    return rc;
 }
