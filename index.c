@@ -239,4 +239,23 @@ int index_add(Index *index, const char *path) {
     }
 
     free(data);
+    struct stat st;
+    if (stat(path, &st) != 0) return -1;
+
+    IndexEntry *entry = index_find(index, path);
+
+    if (!entry) {
+        if (index->count >= MAX_INDEX_ENTRIES) return -1;
+        entry = &index->entries[index->count++];
+    }
+
+    entry->mode = st.st_mode;
+    entry->mtime_sec = st.st_mtime;
+    entry->size = st.st_size;
+    entry->hash = hash;
+
+    strncpy(entry->path, path, sizeof(entry->path));
+    entry->path[sizeof(entry->path) - 1] = '\0';
+
+    return index_save(index);
 }
