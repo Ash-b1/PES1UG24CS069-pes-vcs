@@ -14,6 +14,8 @@
 // ─── PROVIDED: Command Implementations ──────────────────────────────────────
 
 // Usage: pes init
+int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out);
+
 void cmd_init(void) {
     if (mkdir(PES_DIR, 0755) != 0 && access(PES_DIR, F_OK) != 0) {
         fprintf(stderr, "error: failed to create %s\n", PES_DIR);
