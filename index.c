@@ -176,6 +176,8 @@ int index_load(Index *index) {
 //
 // Returns 0 on success, -1 on error.
 int index_save(const Index *index) {
+    mkdir(".pes", 0755);
+    
     FILE *f = fopen(".pes/index", "w");
     if (!f) return -1;
 
