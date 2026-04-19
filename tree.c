@@ -140,3 +140,18 @@ int tree_from_index(ObjectID *id_out) {
 
     return build(&idx, "", id_out);
 }
+static int build(Index *idx, const char *prefix, ObjectID *out) {
+    Tree tree;
+    tree.count = 0;
+
+    size_t prefix_len = strlen(prefix);
+
+    for (int i = 0; i < idx->count; i++) {
+        const char *path = idx->entries[i].path;
+
+        if (strncmp(path, prefix, prefix_len) != 0)
+            continue;
+    }
+
+    return -1;
+}
