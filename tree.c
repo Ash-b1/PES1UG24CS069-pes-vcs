@@ -143,7 +143,10 @@ int tree_from_index(ObjectID *id_out) {
 static int build(Index *idx, const char *prefix, ObjectID *out) {
     Tree tree;
     tree.count = 0;
-
+    
+    char seen[1024][256];
+    int seen_count = 0;
+    
     size_t prefix_len = strlen(prefix);
 
     for (int i = 0; i < idx->count; i++) {
@@ -159,6 +162,35 @@ static int build(Index *idx, const char *prefix, ObjectID *out) {
             e->mode = idx->entries[i].mode;
             e->hash = idx->entries[i].hash;
             strcpy(e->name, rest);
+        }else {
+            char dir[256];
+            int len = slash - rest;
+            strncpy(dir, rest, len);
+            dir[len] = '\0';
+
+            int found = 0;
+            for (int j = 0; j < seen_count; j++) {
+                if (strcmp(seen[j], dir) == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (found) continue;
+
+            strcpy(seen[seen_count++], dir);
+
+            char new_prefix[512];
+            snprintf(new_prefix, sizeof(new_prefix), "%s%s/", prefix, dir);
+
+            ObjectID sub;
+            if (build(idx, new_prefix, &sub) < 0)
+                return -1;
+
+            TreeEntry *e = &tree.entries[tree.count++];
+            e->mode = MODE_DIR;
+            e->hash = sub;
+            strcpy(e->name, dir);
         }
     }
     (void)out;
